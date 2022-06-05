@@ -12,7 +12,7 @@ func TestPipeListener(s *testing.T) {
 	t := core.T{T: s}
 
 	t.Run("Success", func(t *core.T) {
-		p := &core.PipeListener{}
+		p := core.ListenPipe()
 
 		t.Go(func() {
 			conn, err := p.Accept()
@@ -26,7 +26,7 @@ func TestPipeListener(s *testing.T) {
 	})
 
 	t.Run("WhenClosed", func(t *core.T) {
-		p := &core.PipeListener{}
+		p := core.ListenPipe()
 		p.Close()
 
 		conn, err := p.Accept()
@@ -38,8 +38,14 @@ func TestPipeListener(s *testing.T) {
 		t.AssertEqual(nil, conn)
 	})
 
+	t.Run("WhenClosedTwice", func(t *core.T) {
+		p := core.ListenPipe()
+		t.AssertEqual(nil, p.Close())
+		t.AssertEqual(syscall.EINVAL, p.Close())
+	})
+
 	t.Run("WhenContextCanceled", func(t *core.T) {
-		p := &core.PipeListener{}
+		p := core.ListenPipe()
 
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net"
 	"strings"
-	"sync"
+	"sync/atomic"
 	"syscall"
 )
 
@@ -24,21 +24,20 @@ func Listen(addr string) (net.Listener, error) {
 // PipeListener is a net.Listener that works over a pipe. It provides
 // dialer functions that can be used in an HTTP client or gRPC options.
 //
-// Its zero value is safe to use. PipeListener must not be copied after
-// its first use.
+// PipeListener must not be copied after its first use.
 type PipeListener struct {
-	conns chan net.Conn
-	done  chan struct{}
-
-	closeOnce sync.Once
-	initOnce  sync.Once
+	closed int32
+	conns  chan net.Conn
+	done   chan struct{}
 }
 
 var _ net.Listener = &PipeListener{}
 
-func (p *PipeListener) Accept() (net.Conn, error) {
-	p.initOnce.Do(p.init)
+func ListenPipe() *PipeListener {
+	return &PipeListener{conns: make(chan net.Conn), done: make(chan struct{})}
+}
 
+func (p *PipeListener) Accept() (net.Conn, error) {
 	select {
 	case conn := <-p.conns:
 		return conn, nil
@@ -50,8 +49,10 @@ func (p *PipeListener) Accept() (net.Conn, error) {
 func (p *PipeListener) Addr() net.Addr { return pipeListenerAddr{} }
 
 func (p *PipeListener) Close() error {
-	p.initOnce.Do(p.init)
-	p.closeOnce.Do(func() { close(p.done) })
+	if !atomic.CompareAndSwapInt32(&p.closed, 0, 1) {
+		return syscall.EINVAL
+	}
+	close(p.done)
 	return nil
 }
 
@@ -60,8 +61,6 @@ func (p *PipeListener) Dial(_, _ string) (net.Conn, error) {
 }
 
 func (p *PipeListener) DialContext(ctx context.Context, _, _ string) (net.Conn, error) {
-	p.initOnce.Do(p.init)
-
 	s, c := net.Pipe()
 	select {
 	case p.conns <- s:
@@ -75,11 +74,6 @@ func (p *PipeListener) DialContext(ctx context.Context, _, _ string) (net.Conn, 
 
 func (p *PipeListener) DialContextGRPC(ctx context.Context, _ string) (net.Conn, error) {
 	return p.DialContext(ctx, "", "")
-}
-
-func (p *PipeListener) init() {
-	p.conns = make(chan net.Conn)
-	p.done = make(chan struct{})
 }
 
 type pipeListenerAddr struct{}
