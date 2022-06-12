@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: © 2022 Grégoire Duchêne <gduchene@awhk.org>
+// SPDX-License-Identifier: ISC
+
 package core
 
 import (
@@ -8,6 +11,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+// T is a wrapper around the standard testing.T. It adds a few helper
+// functions, but behaves otherwise like testing.T.
 type T struct {
 	*testing.T
 	Options []cmp.Option
@@ -26,13 +31,13 @@ func (t *T) AssertEqual(exp, actual any) bool {
 	return false
 }
 
-func (t *T) AssertErrorIs(err, target error) bool {
+func (t *T) AssertErrorIs(target, err error) bool {
 	t.Helper()
 
 	if errors.Is(err, target) {
 		return true
 	}
-	t.Errorf("\nexpected error to be %#v, got %#v", err, target)
+	t.Errorf("\nexpected error chain to contain %#v, got %#v", target, err)
 	return false
 }
 

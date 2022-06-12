@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: © 2022 Grégoire Duchêne <gduchene@awhk.org>
+// SPDX-License-Identifier: ISC
+
 package core_test
 
 import (
