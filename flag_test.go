@@ -11,60 +11,44 @@ import (
 	"go.awhk.org/core"
 )
 
-func TestFlagVar(s *testing.T) {
+func TestFlagT(s *testing.T) {
 	t := core.T{T: s}
 
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fl := core.FlagVar(fs, "test", "", strconv.ParseBool)
-	t.AssertErrorIs(nil, fs.Parse([]string{"-test=true"}))
-	t.AssertEqual(true, *fl)
-}
-
-func TestFlagVarDef(s *testing.T) {
-	t := core.T{T: s}
-
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fl := core.FlagVarDef(fs, "test", "", strconv.Atoi, 42)
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+	fl := core.FlagT(fs, "test", 42, "", strconv.Atoi)
 	t.AssertEqual(42, *fl)
-	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1"}))
-	t.AssertEqual(1, *fl)
+	t.AssertErrorIs(nil, fs.Parse([]string{"-test=84"}))
+	t.AssertEqual(84, *fl)
 }
 
-func TestFlagVarPtr(s *testing.T) {
+func TestFlagTVar(s *testing.T) {
 	t := core.T{T: s}
 
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fl := false
-	core.FlagVarPtr(fs, "test", "", strconv.ParseBool, &fl)
-	t.AssertErrorIs(nil, fs.Parse([]string{"-test=true"}))
-	t.AssertEqual(true, fl)
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+	var fl int
+	core.FlagTVar(fs, &fl, "test", 42, "", strconv.Atoi)
+	t.AssertEqual(42, fl)
+	t.AssertErrorIs(nil, fs.Parse([]string{"-test=84"}))
+	t.AssertEqual(84, fl)
 }
 
-func TestFlagVarSlice(s *testing.T) {
+func TestFlagTSlice(s *testing.T) {
 	t := core.T{T: s}
 
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fl := core.FlagVarSlice(fs, "test", "", strconv.Atoi)
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+	fl := core.FlagTSlice(fs, "test", []int{42}, "", strconv.Atoi)
+	t.AssertEqual([]int{42}, *fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2", "-test=42"}))
 	t.AssertEqual([]int{1, 2, 42}, *fl)
 }
 
-func TestFlagVarSliceDef(s *testing.T) {
+func TestFlagTSliceVar(s *testing.T) {
 	t := core.T{T: s}
 
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fl := core.FlagVarSliceDef(fs, "test", "", strconv.Atoi, []int{42})
-	t.AssertEqual([]int{42}, *fl)
-	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2"}))
-	t.AssertEqual([]int{1, 2}, *fl)
-}
-
-func TestFlagVarSlicePtr(s *testing.T) {
-	t := core.T{T: s}
-
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fl := []int{}
-	core.FlagVarSlicePtr(fs, "test", "", strconv.Atoi, &fl)
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+	var fl []int
+	core.FlagTSliceVar(fs, &fl, "test", []int{42}, "", strconv.Atoi)
+	t.AssertEqual([]int{42}, fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2", "-test=42"}))
 	t.AssertEqual([]int{1, 2, 42}, fl)
 }
