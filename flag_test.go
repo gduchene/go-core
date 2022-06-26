@@ -20,6 +20,16 @@ func TestFlagVar(s *testing.T) {
 	t.AssertEqual(true, *fl)
 }
 
+func TestFlagVarDef(s *testing.T) {
+	t := core.T{T: s}
+
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fl := core.FlagVarDef(fs, "test", "", strconv.Atoi, 42)
+	t.AssertEqual(42, *fl)
+	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1"}))
+	t.AssertEqual(1, *fl)
+}
+
 func TestFlagVarPtr(s *testing.T) {
 	t := core.T{T: s}
 
@@ -37,6 +47,16 @@ func TestFlagVarSlice(s *testing.T) {
 	fl := core.FlagVarSlice(fs, "test", "", strconv.Atoi)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2", "-test=42"}))
 	t.AssertEqual([]int{1, 2, 42}, *fl)
+}
+
+func TestFlagVarSliceDef(s *testing.T) {
+	t := core.T{T: s}
+
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fl := core.FlagVarSliceDef(fs, "test", "", strconv.Atoi, []int{42})
+	t.AssertEqual([]int{42}, *fl)
+	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2"}))
+	t.AssertEqual([]int{1, 2}, *fl)
 }
 
 func TestFlagVarSlicePtr(s *testing.T) {

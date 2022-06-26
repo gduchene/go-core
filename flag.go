@@ -15,6 +15,12 @@ func FlagVar[T any](fs *flag.FlagSet, name, usage string, parse ParseFunc[T]) *T
 	return v.Value
 }
 
+func FlagVarDef[T any](fs *flag.FlagSet, name, usage string, parse ParseFunc[T], def T) *T {
+	val := def
+	FlagVarPtr(fs, name, usage, parse, &val)
+	return &val
+}
+
 func FlagVarPtr[T any](fs *flag.FlagSet, name, usage string, parse ParseFunc[T], val *T) {
 	fs.Var(&flagValue[T]{Parse: parse, Value: val}, name, usage)
 }
@@ -23,6 +29,13 @@ func FlagVarSlice[T any](fs *flag.FlagSet, name, usage string, parse ParseFunc[T
 	v := &flagValueSlice[T]{Parse: parse, Values: new([]T)}
 	fs.Var(v, name, usage)
 	return v.Values
+}
+
+func FlagVarSliceDef[T any](fs *flag.FlagSet, name, usage string, parse ParseFunc[T], def []T) *[]T {
+	vals := make([]T, len(def))
+	copy(vals, def)
+	FlagVarSlicePtr(fs, name, usage, parse, &vals)
+	return &vals
 }
 
 func FlagVarSlicePtr[T any](fs *flag.FlagSet, name, usage string, parse ParseFunc[T], vals *[]T) {
@@ -66,6 +79,8 @@ func (f *flagValue[T]) String() string {
 type flagValueSlice[T any] struct {
 	Parse  ParseFunc[T]
 	Values *[]T
+
+	shouldAppend bool
 }
 
 var _ flag.Value = &flagValueSlice[any]{}
@@ -75,7 +90,12 @@ func (f *flagValueSlice[T]) Set(s string) error {
 	if err != nil {
 		return err
 	}
-	*f.Values = append(*f.Values, val)
+	if f.shouldAppend {
+		*f.Values = append(*f.Values, val)
+	} else {
+		*f.Values = []T{val}
+		f.shouldAppend = true
+	}
 	return nil
 }
 
