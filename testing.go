@@ -20,6 +20,15 @@ type T struct {
 	wg sync.WaitGroup
 }
 
+func (t *T) Assert(b bool) bool {
+	t.Helper()
+
+	if !b {
+		t.Error("\nexepected value to be true")
+	}
+	return b
+}
+
 func (t *T) AssertEqual(exp, actual any) bool {
 	t.Helper()
 
@@ -65,6 +74,15 @@ func (t *T) AssertPanicsWith(f func(), exp any) (b bool) {
 
 	f()
 	return true
+}
+
+func (t *T) AssertNot(b bool) bool {
+	t.Helper()
+
+	if b {
+		t.Error("\nexpected value to be false")
+	}
+	return !b
 }
 
 func (t *T) AssertNotEqual(notExp, actual any) bool {
