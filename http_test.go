@@ -36,7 +36,7 @@ func TestFilteringHTTPHandler(s *testing.T) {
 			name:   "WhenFiltered",
 			method: http.MethodGet,
 
-			expHeader:     http.Header{"Allowed": {"HEAD"}},
+			expHeader:     http.Header{"Allow": {"HEAD"}},
 			expStatusCode: http.StatusMethodNotAllowed,
 		},
 	} {
@@ -62,7 +62,7 @@ func TestFilterHTTPMethod(s *testing.T) {
 		name   string
 		method string
 
-		expAllowed    string
+		expAllow      string
 		expFiltered   bool
 		expStatusCode int
 	}{
@@ -77,7 +77,7 @@ func TestFilterHTTPMethod(s *testing.T) {
 			name:   "WhenFiltered",
 			method: http.MethodHead,
 
-			expAllowed:    "GET, POST",
+			expAllow:      "GET, POST",
 			expFiltered:   true,
 			expStatusCode: http.StatusMethodNotAllowed,
 		},
@@ -90,7 +90,7 @@ func TestFilterHTTPMethod(s *testing.T) {
 			t.AssertEqual(tc.expFiltered, filter(w, req))
 
 			res := w.Result()
-			t.AssertEqual(tc.expAllowed, res.Header.Get("Allowed"))
+			t.AssertEqual(tc.expAllow, res.Header.Get("Allow"))
 			t.AssertEqual(tc.expStatusCode, res.StatusCode)
 		})
 	}

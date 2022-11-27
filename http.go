@@ -41,7 +41,7 @@ func FilterHTTPMethod(methods ...string) HTTPFilterFunc {
 				return false
 			}
 		}
-		w.Header().Set("Allowed", allowed)
+		w.Header().Set("Allow", allowed)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return true
 	}
