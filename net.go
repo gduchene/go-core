@@ -63,19 +63,16 @@ func (p *PipeListener) Dial(_, _ string) (net.Conn, error) {
 	return p.DialContext(context.Background(), "", "")
 }
 
-func (p *PipeListener) DialContext(ctx context.Context, _, _ string) (_ net.Conn, err error) {
+func (p *PipeListener) DialContext(ctx context.Context, _, _ string) (net.Conn, error) {
 	s, c := net.Pipe()
 	select {
 	case p.conns <- s:
 		return c, nil
 	case <-p.done:
-		err = syscall.ECONNREFUSED
+		return nil, syscall.ECONNREFUSED
 	case <-ctx.Done():
-		err = ctx.Err()
+		return nil, ctx.Err()
 	}
-	s.Close()
-	c.Close()
-	return
 }
 
 func (p *PipeListener) DialContextGRPC(ctx context.Context, _ string) (net.Conn, error) {
