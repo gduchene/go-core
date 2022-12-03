@@ -11,23 +11,23 @@ import (
 	"time"
 )
 
-// FlagT works like other flag.FlagSet methods, except it is generic.
-// The passed ParseFunc will be used to parse raw arguments into a
-// useful T value. A valid *T is returned for use by the caller.
-func FlagT[T any](fs *flag.FlagSet, name string, value T, usage string, parse ParseFunc[T]) *T {
+// Flag works like other flag.FlagSet methods, except it is generic. The
+// passed ParseFunc will be used to parse raw arguments into a useful T
+// value. A valid *T is returned for use by the caller.
+func Flag[T any](fs *flag.FlagSet, name string, value T, usage string, parse ParseFunc[T]) *T {
 	p := new(T)
-	FlagTVar(fs, p, name, value, usage, parse)
+	FlagVar(fs, p, name, value, usage, parse)
 	return p
 }
 
-// FlagTVar works like FlagT, except it is up to the caller to supply a
+// FlagVar works like FlagT, except it is up to the caller to supply a
 // valid *T.
-func FlagTVar[T any](fs *flag.FlagSet, p *T, name string, value T, usage string, parse ParseFunc[T]) {
+func FlagVar[T any](fs *flag.FlagSet, p *T, name string, value T, usage string, parse ParseFunc[T]) {
 	*p = value
 	fs.Var(&flagValue[T]{Parse: parse, Value: p}, name, usage)
 }
 
-// FlagTSlice works like FlagT, except slices are created; flags created
+// FlagSlice works like FlagT, except slices are created; flags created
 // that way can therefore be repeated. A valid *[]T is returned for use
 // by the caller.
 //
@@ -39,15 +39,15 @@ func FlagTVar[T any](fs *flag.FlagSet, p *T, name string, value T, usage string,
 // - -flag=val -flag=val-2 -flag=val-3
 // - -flag=val,val-2 -flag=val-3
 // - -flag=val,val-2,val-3
-func FlagTSlice[T any](fs *flag.FlagSet, name string, values []T, usage string, parse ParseFunc[T], sep string) *[]T {
+func FlagSlice[T any](fs *flag.FlagSet, name string, values []T, usage string, parse ParseFunc[T], sep string) *[]T {
 	p := new([]T)
-	FlagTSliceVar(fs, p, name, values, usage, parse, sep)
+	FlagSliceVar(fs, p, name, values, usage, parse, sep)
 	return p
 }
 
-// FlagTSliceVar works like FlagTSlice, except it is up to the caller to
+// FlagSliceVar works like FlagTSlice, except it is up to the caller to
 // supply a valid *[]T.
-func FlagTSliceVar[T any](fs *flag.FlagSet, p *[]T, name string, values []T, usage string, parse ParseFunc[T], sep string) {
+func FlagSliceVar[T any](fs *flag.FlagSet, p *[]T, name string, values []T, usage string, parse ParseFunc[T], sep string) {
 	if values != nil {
 		*p = make([]T, len(values))
 		copy(*p, values)

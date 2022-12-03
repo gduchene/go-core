@@ -11,43 +11,43 @@ import (
 	"go.awhk.org/core"
 )
 
-func TestFlagT(s *testing.T) {
+func TestFlag(s *testing.T) {
 	t := core.T{T: s}
 
 	fs := flag.NewFlagSet("", flag.PanicOnError)
-	fl := core.FlagT(fs, "test", 42, "", strconv.Atoi)
+	fl := core.Flag(fs, "test", 42, "", strconv.Atoi)
 	t.AssertEqual(42, *fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=84"}))
 	t.AssertEqual(84, *fl)
 }
 
-func TestFlagTVar(s *testing.T) {
+func TestFlagVar(s *testing.T) {
 	t := core.T{T: s}
 
 	fs := flag.NewFlagSet("", flag.PanicOnError)
 	var fl int
-	core.FlagTVar(fs, &fl, "test", 42, "", strconv.Atoi)
+	core.FlagVar(fs, &fl, "test", 42, "", strconv.Atoi)
 	t.AssertEqual(42, fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=84"}))
 	t.AssertEqual(84, fl)
 }
 
-func TestFlagTSlice(s *testing.T) {
+func TestFlagSlice(s *testing.T) {
 	t := core.T{T: s}
 
 	fs := flag.NewFlagSet("", flag.PanicOnError)
-	fl := core.FlagTSlice(fs, "test", []int{42}, "", strconv.Atoi, ",")
+	fl := core.FlagSlice(fs, "test", []int{42}, "", strconv.Atoi, ",")
 	t.AssertEqual([]int{42}, *fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2", "-test=42,84"}))
 	t.AssertEqual([]int{1, 2, 42, 84}, *fl)
 }
 
-func TestFlagTSliceVar(s *testing.T) {
+func TestFlagSliceVar(s *testing.T) {
 	t := core.T{T: s}
 
 	fs := flag.NewFlagSet("", flag.PanicOnError)
 	var fl []int
-	core.FlagTSliceVar(fs, &fl, "test", []int{42}, "", strconv.Atoi, ",")
+	core.FlagSliceVar(fs, &fl, "test", []int{42}, "", strconv.Atoi, ",")
 	t.AssertEqual([]int{42}, fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=1", "-test=2", "-test=42,84"}))
 	t.AssertEqual([]int{1, 2, 42, 84}, fl)
@@ -102,7 +102,7 @@ func TestInitFlagSet(s *testing.T) {
 		t.Run(tc.name, func(t *core.T) {
 			fs := flag.NewFlagSet("", flag.PanicOnError)
 			fi := fs.Int("int", 0, "")
-			fl := core.FlagTSlice(fs, "int-slice", nil, "", strconv.Atoi, ",")
+			fl := core.FlagSlice(fs, "int-slice", nil, "", strconv.Atoi, ",")
 			fm := fs.String("string", "", "")
 			t.AssertErrorIs(tc.expErr, core.InitFlagSet(fs, tc.env, tc.cfg, tc.args))
 			t.AssertEqual(tc.expInt, *fi)
