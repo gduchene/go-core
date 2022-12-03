@@ -110,4 +110,13 @@ func TestInitFlagSet(s *testing.T) {
 			t.AssertEqual(tc.expStr, *fm)
 		})
 	}
+
+	t.Run("NoMutableFlagValue", func(t *core.T) {
+		fs := flag.NewFlagSet("", flag.PanicOnError)
+		fi := fs.Int("int", 0, "")
+		t.AssertErrorIs(nil, core.InitFlagSet(fs, nil, nil, []string{"-int=42"}))
+		t.AssertEqual(42, *fi)
+		t.AssertErrorIs(nil, core.InitFlagSet(fs, nil, nil, []string{"-int=21"}))
+		t.AssertEqual(42, *fi)
+	})
 }

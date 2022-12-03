@@ -82,6 +82,12 @@ func InitFlagSet(fs *flag.FlagSet, env []string, cfg map[string]string, args []s
 			return
 		}
 
+		if f.DefValue != f.Value.String() {
+			if _, ok := f.Value.(MutableFlagValue); !ok {
+				return
+			}
+		}
+
 		var next string
 		if val, found := environ[strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))]; found {
 			next = val
@@ -100,6 +106,13 @@ func InitFlagSet(fs *flag.FlagSet, env []string, cfg map[string]string, args []s
 		return fs.Parse(args)
 	}
 	return err
+}
+
+// MutableFlagValue is used to signal whether it is safe to set a flag
+// to another value if it has already been set before, i.e. if its
+// current value (as a string) is the same as its default value.
+type MutableFlagValue interface {
+	MutableFlagValue()
 }
 
 // ParseString returns the string passed with no error set.
