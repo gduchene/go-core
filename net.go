@@ -32,6 +32,8 @@ type PipeListener struct {
 	closed int32
 	conns  chan net.Conn
 	done   chan struct{}
+
+	_ NoCopy
 }
 
 var _ net.Listener = &PipeListener{}

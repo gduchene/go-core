@@ -10,3 +10,14 @@ func Must[T any](val T, err error) T {
 	}
 	return val
 }
+
+// NoCopy flags a type that embeds it as not to be copied. Go does not
+// prevent values from being copied, but ‘go vet’ will pick it up and
+// signal it, which can then be caught by many CI/CD pipelines.
+//
+// See https://github.com/golang/go/issues/8005#issuecomment-190753527
+// for more details.
+type NoCopy struct{}
+
+func (*NoCopy) Lock()   {}
+func (*NoCopy) Unlock() {}
