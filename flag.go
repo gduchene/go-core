@@ -122,8 +122,6 @@ type flagValue[T any] struct {
 	Value *T
 }
 
-var _ flag.Value = &flagValue[any]{}
-
 func (f *flagValue[T]) Set(s string) error {
 	val, err := f.Parse(s)
 	if err != nil {
@@ -148,8 +146,6 @@ type flagValueSlice[T any] struct {
 
 	shouldAppend bool
 }
-
-var _ flag.Value = &flagValueSlice[any]{}
 
 func (f *flagValueSlice[T]) Set(s string) error {
 	vals := []string{s}
