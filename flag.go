@@ -15,15 +15,14 @@ import (
 // passed ParseFunc will be used to parse raw arguments into a useful T
 // value. A valid *T is returned for use by the caller.
 func Flag[T any](fs *flag.FlagSet, name string, value T, usage string, parse ParseFunc[T]) *T {
-	p := new(T)
-	FlagVar(fs, p, name, value, usage, parse)
-	return p
+	p := value
+	FlagVar(fs, &p, name, usage, parse)
+	return &p
 }
 
 // FlagVar works like FlagT, except it is up to the caller to supply a
 // valid *T.
-func FlagVar[T any](fs *flag.FlagSet, p *T, name string, value T, usage string, parse ParseFunc[T]) {
-	*p = value
+func FlagVar[T any](fs *flag.FlagSet, p *T, name string, usage string, parse ParseFunc[T]) {
 	fs.Var(&flagValue[T]{Parse: parse, Value: p}, name, usage)
 }
 
@@ -40,18 +39,15 @@ func FlagVar[T any](fs *flag.FlagSet, p *T, name string, value T, usage string, 
 // - -flag=val,val-2 -flag=val-3
 // - -flag=val,val-2,val-3
 func FlagSlice[T any](fs *flag.FlagSet, name string, values []T, usage string, parse ParseFunc[T], sep string) *[]T {
-	p := new([]T)
-	FlagSliceVar(fs, p, name, values, usage, parse, sep)
-	return p
+	p := make([]T, len(values))
+	copy(p, values)
+	FlagSliceVar(fs, &p, name, usage, parse, sep)
+	return &p
 }
 
 // FlagSliceVar works like FlagTSlice, except it is up to the caller to
 // supply a valid *[]T.
-func FlagSliceVar[T any](fs *flag.FlagSet, p *[]T, name string, values []T, usage string, parse ParseFunc[T], sep string) {
-	if values != nil {
-		*p = make([]T, len(values))
-		copy(*p, values)
-	}
+func FlagSliceVar[T any](fs *flag.FlagSet, p *[]T, name string, usage string, parse ParseFunc[T], sep string) {
 	fs.Var(&flagValueSlice[T]{Parse: parse, Separator: sep, Values: p}, name, usage)
 }
 
@@ -59,9 +55,8 @@ func FlagSliceVar[T any](fs *flag.FlagSet, p *[]T, name string, values []T, usag
 // following order: environment variables, then an arbitrary map, then
 // command line arguments.
 //
-// Note that InitFlagSet does not require the use of any of the Flag
-// functions defined in this package. Standard flags will work just as
-// well.
+// Note that InitFlagSet does not require the use of the Flag functions
+// defined in this package. Standard flags will work just as well.
 func InitFlagSet(fs *flag.FlagSet, env []string, cfg map[string]string, args []string) (err error) {
 	var environ map[string]string
 	if env != nil {
