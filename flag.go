@@ -108,11 +108,6 @@ func InitFlagSet(fs *flag.FlagSet, env []string, cfg map[string]string, args []s
 	return err
 }
 
-// ParseString returns the string passed with no error set.
-func ParseString(s string) (string, error) {
-	return s, nil
-}
-
 // ParseTime parses a string according to the time.RFC3339 format.
 func ParseTime(s string) (time.Time, error) {
 	return time.Parse(time.RFC3339, s)
