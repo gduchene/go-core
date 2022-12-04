@@ -7,7 +7,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -103,6 +105,41 @@ func InitFlagSet(fs *flag.FlagSet, env []string, cfg map[string]string, args []s
 	return err
 }
 
+// Feature represent a code feature that can be enabled and disabled.
+//
+// Feature must not be copied after its first use.
+type Feature struct {
+	Name string
+
+	_       NoCopy
+	enabled int32
+}
+
+// FlagFeature creates a feature that, i.e. a boolean flag that can
+// potentially be changed at run time.
+func FlagFeature(fs *flag.FlagSet, name string, enabled bool, usage string) *Feature {
+	f := &Feature{Name: name}
+	if enabled {
+		f.enabled = 1
+	} else {
+		f.enabled = 0
+	}
+	FlagFeatureVar(fs, f, name, usage)
+	return f
+}
+
+func FlagFeatureVar(fs *flag.FlagSet, f *Feature, name, usage string) {
+	fs.Var(flagFeature{f}, name, usage)
+}
+
+func (f *Feature) Disable()      { atomic.SwapInt32(&f.enabled, 0) }
+func (f *Feature) Enable()       { atomic.SwapInt32(&f.enabled, 1) }
+func (f *Feature) Enabled() bool { return atomic.LoadInt32(&f.enabled) == 1 }
+
+func (f *Feature) String() string {
+	return fmt.Sprintf("%s (enabled: %t)", f.Name, f.Enabled())
+}
+
 // ParseTime parses a string according to the time.RFC3339 format.
 func ParseTime(s string) (time.Time, error) {
 	return time.Parse(time.RFC3339, s)
@@ -111,6 +148,31 @@ func ParseTime(s string) (time.Time, error) {
 // ParseFunc describes functions that will parse a string and return a
 // value or an error.
 type ParseFunc[T any] func(string) (T, error)
+
+type flagFeature struct{ *Feature }
+
+func (flagFeature) IsBoolFlag() bool { return true }
+func (flagFeature) MutableFlag()     {}
+
+func (f flagFeature) Set(s string) error {
+	enable, err := strconv.ParseBool(s)
+	if err != nil {
+		return err
+	}
+	if enable {
+		f.Enable()
+	} else {
+		f.Disable()
+	}
+	return nil
+}
+
+func (f flagFeature) String() string {
+	if f.Enabled() {
+		return "true"
+	}
+	return "false"
+}
 
 type flagValue[T any] struct {
 	Parse ParseFunc[T]

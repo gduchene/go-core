@@ -11,6 +11,18 @@ import (
 	"go.awhk.org/core"
 )
 
+func TestFeature_Disable(t *testing.T) {
+	f := core.Feature{}
+	f.Disable()
+	(&core.T{T: t}).AssertEqual(false, f.Enabled())
+}
+
+func TestFeature_Enable(t *testing.T) {
+	f := core.Feature{}
+	f.Enable()
+	(&core.T{T: t}).AssertEqual(true, f.Enabled())
+}
+
 func TestFlag(s *testing.T) {
 	t := core.T{T: s}
 
@@ -19,6 +31,15 @@ func TestFlag(s *testing.T) {
 	t.AssertEqual(42, *fl)
 	t.AssertErrorIs(nil, fs.Parse([]string{"-test=84"}))
 	t.AssertEqual(84, *fl)
+}
+
+func TestFlagFeature(s *testing.T) {
+	t := core.T{T: s}
+
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+	ff := core.FlagFeature(fs, "some-feature", false, "")
+	t.AssertErrorIs(nil, fs.Parse([]string{"-some-feature"}))
+	t.AssertEqual(true, ff.Enabled())
 }
 
 func TestFlagVar(s *testing.T) {
