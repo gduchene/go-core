@@ -24,7 +24,7 @@ func (t *T) Assert(b bool) bool {
 	t.Helper()
 
 	if !b {
-		t.Error("\nexepected value to be true")
+		t.Error("\nexpected value to be true")
 	}
 	return b
 }
