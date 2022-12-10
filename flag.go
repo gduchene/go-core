@@ -145,6 +145,30 @@ func (f *Feature) String() string {
 // value or an error.
 type ParseFunc[T any] func(string) (T, error)
 
+// ParseProtobufEnum returns a ParseFunc that will return the
+// appropriate enum value or a UnknownEnumValueError if the string
+// passed did not match any of the values supplied.
+//
+// Strings are compared in uppercase only, so ‘FOO,’ ‘foo,’, and ‘fOo’
+// all refer to the same value.
+//
+// Callers should pass the protoc-generated *_value directly. See
+// https://developers.google.com/protocol-buffers/docs/reference/go-generated#enum
+// for more details.
+func ParseProtobufEnum[T ~int32](values map[string]int32) ParseFunc[T] {
+	valid := make([]string, 0, len(values))
+	for val := range values {
+		valid = append(valid, val)
+	}
+	return func(s string) (T, error) {
+		val, found := values[strings.ToUpper(s)]
+		if !found {
+			return 0, UnknownEnumValueError{s, valid}
+		}
+		return T(val), nil
+	}
+}
+
 // ParseStringEnum returns a ParseFunc that will return the string
 // passed if it matched any of the values supplied. If no such match is
 // found, an UnknownEnumValueError is returned.
