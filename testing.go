@@ -40,6 +40,16 @@ func (t *T) AssertEqual(exp, actual any) bool {
 	return false
 }
 
+func (t *T) AssertErrorAs(target any, err error) bool {
+	t.Helper()
+
+	if errors.As(err, target) {
+		return true
+	}
+	t.Errorf("\nexpected error chain to contain %#v, got %#v", target, err)
+	return false
+}
+
 func (t *T) AssertErrorIs(target, err error) bool {
 	t.Helper()
 
