@@ -5,6 +5,7 @@ package core_test
 
 import (
 	"flag"
+	"sort"
 	"strconv"
 	"testing"
 
@@ -139,5 +140,31 @@ func TestInitFlagSet(s *testing.T) {
 		t.AssertEqual(42, *fi)
 		t.AssertErrorIs(nil, core.InitFlagSet(fs, nil, nil, []string{"-int=21"}))
 		t.AssertEqual(42, *fi)
+	})
+}
+
+func TestParseStringEnum(s *testing.T) {
+	t := &core.T{T: s}
+	parse := core.ParseStringEnum("foo", "bar")
+
+	t.Run("Match", func(t *core.T) {
+		val, err := parse("foo")
+		t.AssertErrorIs(nil, err)
+		t.AssertEqual("foo", val)
+
+		val, err = parse("bar")
+		t.AssertErrorIs(nil, err)
+		t.AssertEqual("bar", val)
+	})
+
+	t.Run("UnknownValue", func(t *core.T) {
+		val, err := parse("baz")
+		var exp core.UnknownEnumValueError
+		if t.AssertErrorAs(&exp, err) {
+			t.AssertEqual("baz", exp.Actual)
+			sort.Strings(exp.Expected)
+			t.AssertEqual([]string{"bar", "foo"}, exp.Expected)
+		}
+		t.AssertEqual("", val)
 	})
 }

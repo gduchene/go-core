@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -144,9 +145,42 @@ func (f *Feature) String() string {
 // value or an error.
 type ParseFunc[T any] func(string) (T, error)
 
+// ParseStringEnum returns a ParseFunc that will return the string
+// passed if it matched any of the values supplied. If no such match is
+// found, an UnknownEnumValueError is returned.
+//
+// Note that unlike ParseProtobufEnum, comparison is case-sensitive.
+func ParseStringEnum(values ...string) ParseFunc[string] {
+	return func(s string) (string, error) {
+		for _, val := range values {
+			if s == val {
+				return s, nil
+			}
+		}
+		return "", UnknownEnumValueError{s, values}
+	}
+}
+
 // ParseTime parses a string according to the time.RFC3339 format.
 func ParseTime(s string) (time.Time, error) {
 	return time.Parse(time.RFC3339, s)
+}
+
+// UnknownEnumValueError is returned by the functions produced by
+// ParseProtobufEnum and ParseStringEnum when an unknown value is
+// encountered.
+type UnknownEnumValueError struct {
+	Actual   string
+	Expected []string
+}
+
+func (err UnknownEnumValueError) Error() string {
+	// We sort the expected values so the output is deterministic, which may
+	// be useful when parsing logs or otherwise examining program output.
+	if !sort.StringsAreSorted(err.Expected) {
+		sort.Strings(err.Expected)
+	}
+	return fmt.Sprintf("unknown value %s, expected one of %s", err.Actual, err.Expected)
 }
 
 type flagFeature struct{ *Feature }
