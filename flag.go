@@ -140,14 +140,14 @@ func (f *Feature) String() string {
 	return fmt.Sprintf("%s (enabled: %t)", f.Name, f.Enabled())
 }
 
+// ParseFunc describes functions that will parse a string and return a
+// value or an error.
+type ParseFunc[T any] func(string) (T, error)
+
 // ParseTime parses a string according to the time.RFC3339 format.
 func ParseTime(s string) (time.Time, error) {
 	return time.Parse(time.RFC3339, s)
 }
-
-// ParseFunc describes functions that will parse a string and return a
-// value or an error.
-type ParseFunc[T any] func(string) (T, error)
 
 type flagFeature struct{ *Feature }
 
