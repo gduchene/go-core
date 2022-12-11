@@ -5,6 +5,7 @@ package core_test
 
 import (
 	"errors"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -12,6 +13,16 @@ import (
 
 	"go.awhk.org/core"
 )
+
+func TestMapKeys(s *testing.T) {
+	t := core.T{T: s}
+
+	t.AssertEqual(([]string)(nil), core.MapKeys[map[string]int](nil))
+	t.AssertEqual(([]string)(nil), core.MapKeys(map[string]int{}))
+	keys := core.MapKeys(map[string]int{"foo": 1, "bar": 2})
+	sort.Strings(keys)
+	t.AssertEqual([]string{"bar", "foo"}, keys)
+}
 
 func TestMust(s *testing.T) {
 	t := core.T{T: s, Options: []cmp.Option{cmpopts.EquateErrors()}}

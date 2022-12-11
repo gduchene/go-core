@@ -3,6 +3,20 @@
 
 package core
 
+// MapKeys returns a slice containing all the keys of the map supplied.
+// It basically is https://pkg.go.dev/golang.org/x/exp/maps#Keys, but
+// that package is still unstable.
+func MapKeys[T ~map[K]V, K comparable, V any](m T) []K {
+	if len(m) == 0 {
+		return nil
+	}
+	ret := make([]K, 0, len(m))
+	for k := range m {
+		ret = append(ret, k)
+	}
+	return ret
+}
+
 // Must panics if err is not nil. It returns val otherwise.
 func Must[T any](val T, err error) T {
 	if err != nil {
