@@ -11,6 +11,19 @@ func Must[T any](val T, err error) T {
 	return val
 }
 
+// SliceMap applies a function to a slice and returns a new slice made
+// of the returned values.
+func SliceMap[T ~[]S, S, U any](f func(S) U, ts T) []U {
+	if len(ts) == 0 {
+		return nil
+	}
+	ret := make([]U, len(ts))
+	for i, t := range ts {
+		ret[i] = f(t)
+	}
+	return ret
+}
+
 // NoCopy flags a type that embeds it as not to be copied. Go does not
 // prevent values from being copied, but ‘go vet’ will pick it up and
 // signal it, which can then be caught by many CI/CD pipelines.

@@ -21,3 +21,11 @@ func TestMust(s *testing.T) {
 	t.AssertNotPanics(func() { core.Must(42, nil) })
 	t.AssertEqual(42, core.Must(42, nil))
 }
+
+func TestSliceMap(s *testing.T) {
+	t := core.T{T: s}
+
+	t.AssertEqual(([]int)(nil), core.SliceMap(func(int) int { return 0 }, ([]int)(nil)))
+	t.AssertEqual(([]int)(nil), core.SliceMap(func(int) int { return 0 }, []int{}))
+	t.AssertEqual([]int{42, 84}, core.SliceMap(func(x int) int { return x * 2 }, []int{21, 42}))
+}
