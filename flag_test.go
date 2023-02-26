@@ -203,3 +203,35 @@ func TestParseStringEnum(s *testing.T) {
 		t.AssertEqual("", val)
 	})
 }
+
+func TestParseStringerEnum(s *testing.T) {
+	t := &core.T{T: s, Options: cmp.Options{fakeEnumComparer}}
+	parser := core.ParseStringerEnum(fakeEnumFoo, fakeEnumBar)
+
+	t.Run("Match", func(t *core.T) {
+		val, err := parser("FOO")
+		t.AssertErrorIs(nil, err)
+		t.AssertEqual(fakeEnumFoo, val)
+	})
+
+	t.Run("UnknownValue", func(t *core.T) {
+		val, err := parser("baz")
+		var exp core.UnknownEnumValueError[fakeEnum]
+		if t.AssertErrorAs(&exp, err) {
+			t.AssertEqual("baz", exp.Actual)
+			t.AssertEqual([]fakeEnum{fakeEnumFoo, fakeEnumBar}, exp.Expected)
+		}
+		t.AssertEqual(fakeEnum{}, val)
+	})
+}
+
+type fakeEnum struct{ string }
+
+var (
+	fakeEnumFoo = fakeEnum{"FOO"}
+	fakeEnumBar = fakeEnum{"BAR"}
+
+	fakeEnumComparer = cmp.Comparer(func(x, y fakeEnum) bool { return x == y })
+)
+
+func (e fakeEnum) String() string { return e.string }

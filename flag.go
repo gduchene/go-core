@@ -184,6 +184,20 @@ func ParseStringEnum(values ...string) ParseFunc[string] {
 	}
 }
 
+// ParseStringerEnum returns a ParseFunc that will return the first
+// value having a string value matching the string passed.
+func ParseStringerEnum[T fmt.Stringer](values ...T) ParseFunc[T] {
+	return func(s string) (T, error) {
+		for _, val := range values {
+			if s == val.String() {
+				return val, nil
+			}
+		}
+		var zero T
+		return zero, UnknownEnumValueError[T]{s, values}
+	}
+}
+
 // ParseTime parses a string according to the time.RFC3339 format.
 func ParseTime(s string) (time.Time, error) {
 	return time.Parse(time.RFC3339, s)
