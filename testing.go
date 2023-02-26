@@ -15,7 +15,7 @@ import (
 // functions, but behaves otherwise like testing.T.
 type T struct {
 	*testing.T
-	Options []cmp.Option
+	Options cmp.Options
 
 	wg sync.WaitGroup
 }
@@ -135,9 +135,10 @@ func (t *T) Must(b bool) {
 
 func (t *T) Run(name string, f func(t *T)) {
 	t.T.Run(name, func(s *testing.T) {
-		t := &T{T: s, Options: t.Options}
-		f(t)
-		t.wg.Wait()
+		o := &T{T: s, Options: make(cmp.Options, len(t.Options))}
+		copy(o.Options, t.Options)
+		f(o)
+		o.wg.Wait()
 	})
 }
 
