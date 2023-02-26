@@ -169,6 +169,10 @@ func ParseProtobufEnum[T ~int32](values map[string]int32) ParseFunc[T] {
 	}
 }
 
+// ParseString is a trivial function that is designed to be used with
+// FlagSlice and FlagSliceVar.
+func ParseString(s string) (string, error) { return s, nil }
+
 // ParseStringEnum returns a ParseFunc that will return the string
 // passed if it matched any of the values supplied. If no such match is
 // found, an UnknownEnumValueError is returned.
