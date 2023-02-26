@@ -5,7 +5,6 @@ package core_test
 
 import (
 	"errors"
-	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -15,13 +14,11 @@ import (
 )
 
 func TestMapKeys(s *testing.T) {
-	t := core.T{T: s}
+	t := core.T{T: s, Options: cmp.Options{sortStrings}}
 
 	t.AssertEqual(([]string)(nil), core.MapKeys[map[string]int](nil))
 	t.AssertEqual(([]string)(nil), core.MapKeys(map[string]int{}))
-	keys := core.MapKeys(map[string]int{"foo": 1, "bar": 2})
-	sort.Strings(keys)
-	t.AssertEqual([]string{"bar", "foo"}, keys)
+	t.AssertEqual([]string{"bar", "foo"}, core.MapKeys(map[string]int{"foo": 1, "bar": 2}))
 }
 
 func TestMust(s *testing.T) {
@@ -40,3 +37,5 @@ func TestSliceMap(s *testing.T) {
 	t.AssertEqual(([]int)(nil), core.SliceMap(func(int) int { return 0 }, []int{}))
 	t.AssertEqual([]int{42, 84}, core.SliceMap(func(x int) int { return x * 2 }, []int{21, 42}))
 }
+
+var sortStrings = cmpopts.SortSlices(func(s, t string) bool { return s <= t })
