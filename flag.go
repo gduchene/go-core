@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -156,14 +155,10 @@ type ParseFunc[T any] func(string) (T, error)
 // https://developers.google.com/protocol-buffers/docs/reference/go-generated#enum
 // for more details.
 func ParseProtobufEnum[T ~int32](values map[string]int32) ParseFunc[T] {
-	valid := make([]string, 0, len(values))
-	for val := range values {
-		valid = append(valid, val)
-	}
 	return func(s string) (T, error) {
 		val, found := values[strings.ToUpper(s)]
 		if !found {
-			return 0, UnknownEnumValueError{s, valid}
+			return 0, UnknownEnumValueError[string]{s, MapKeys(values)}
 		}
 		return T(val), nil
 	}
@@ -185,7 +180,7 @@ func ParseStringEnum(values ...string) ParseFunc[string] {
 				return s, nil
 			}
 		}
-		return "", UnknownEnumValueError{s, values}
+		return "", UnknownEnumValueError[string]{s, values}
 	}
 }
 
@@ -197,18 +192,13 @@ func ParseTime(s string) (time.Time, error) {
 // UnknownEnumValueError is returned by the functions produced by
 // ParseProtobufEnum and ParseStringEnum when an unknown value is
 // encountered.
-type UnknownEnumValueError struct {
+type UnknownEnumValueError[T any] struct {
 	Actual   string
-	Expected []string
+	Expected []T
 }
 
-func (err UnknownEnumValueError) Error() string {
-	// We sort the expected values so the output is deterministic, which may
-	// be useful when parsing logs or otherwise examining program output.
-	if !sort.StringsAreSorted(err.Expected) {
-		sort.Strings(err.Expected)
-	}
-	return fmt.Sprintf("unknown value %s, expected one of %s", err.Actual, err.Expected)
+func (err UnknownEnumValueError[T]) Error() string {
+	return fmt.Sprintf("unknown value %s, expected one of %v", err.Actual, err.Expected)
 }
 
 type flagFeature struct{ *Feature }
