@@ -130,8 +130,8 @@ func FlagFeatureVar(fs *flag.FlagSet, f *Feature, name, usage string) {
 	fs.Var(flagFeature{f}, name, usage)
 }
 
-func (f *Feature) Disable()      { atomic.SwapInt32(&f.enabled, 0) }
-func (f *Feature) Enable()       { atomic.SwapInt32(&f.enabled, 1) }
+func (f *Feature) Disable()      { atomic.StoreInt32(&f.enabled, 0) }
+func (f *Feature) Enable()       { atomic.StoreInt32(&f.enabled, 1) }
 func (f *Feature) Enabled() bool { return atomic.LoadInt32(&f.enabled) == 1 }
 
 func (f *Feature) String() string {
