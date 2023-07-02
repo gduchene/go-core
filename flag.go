@@ -121,8 +121,6 @@ func FlagFeature(fs *flag.FlagSet, name string, enabled bool, usage string) *Fea
 	f := &Feature{Name: name}
 	if enabled {
 		f.enabled = 1
-	} else {
-		f.enabled = 0
 	}
 	FlagFeatureVar(fs, f, name, usage)
 	return f
