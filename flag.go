@@ -4,14 +4,21 @@
 package core
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 )
+
+// ErrStringRegexpNoMatch is an error wrapped and returned by functions
+// created by ParseStringRegexp if the string passed did not match the
+// regular expression used.
+var ErrStringRegexpNoMatch = errors.New("string did not match regexp")
 
 // Flag works like other flag.FlagSet methods, except it is generic. The
 // passed ParseFunc will be used to parse raw arguments into a useful T
@@ -179,6 +186,18 @@ func ParseStringEnum(values ...string) ParseFunc[string] {
 			}
 		}
 		return "", UnknownEnumValueError[string]{s, values}
+	}
+}
+
+// ParseStringRegexp returns a ParseFunc that will return the string
+// passed if it matches the regular expression.
+func ParseStringRegexp(r *regexp.Regexp) ParseFunc[string] {
+	err := fmt.Errorf("%w %q", ErrStringRegexpNoMatch, r)
+	return func(s string) (string, error) {
+		if !r.MatchString(s) {
+			return "", err
+		}
+		return s, nil
 	}
 }
 

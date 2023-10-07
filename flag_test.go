@@ -5,6 +5,7 @@ package core_test
 
 import (
 	"flag"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -200,6 +201,27 @@ func TestParseStringEnum(s *testing.T) {
 			t.AssertEqual("baz", exp.Actual)
 			t.AssertEqual([]string{"foo", "bar"}, exp.Expected)
 		}
+		t.AssertEqual("", val)
+	})
+}
+
+func TestParseStringRegexp(s *testing.T) {
+	t := &core.T{T: s}
+	parse := core.ParseStringRegexp(regexp.MustCompile("Hello( World!)?"))
+
+	t.Run("Match", func(t *core.T) {
+		val, err := parse("Hello")
+		t.AssertErrorIs(nil, err)
+		t.AssertEqual("Hello", val)
+
+		val, err = parse("Hello World!")
+		t.AssertErrorIs(nil, err)
+		t.AssertEqual("Hello World!", val)
+	})
+
+	t.Run("NoMatch", func(t *core.T) {
+		val, err := parse("something else")
+		t.AssertErrorIs(core.ErrStringRegexpNoMatch, err)
 		t.AssertEqual("", val)
 	})
 }
