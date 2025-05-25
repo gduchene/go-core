@@ -13,14 +13,6 @@ import (
 	"go.awhk.org/core"
 )
 
-func TestMapKeys(s *testing.T) {
-	t := core.T{T: s, Options: cmp.Options{sortStrings}}
-
-	t.AssertEqual(([]string)(nil), core.MapKeys[map[string]int](nil))
-	t.AssertEqual(([]string)(nil), core.MapKeys(map[string]int{}))
-	t.AssertEqual([]string{"bar", "foo"}, core.MapKeys(map[string]int{"foo": 1, "bar": 2}))
-}
-
 func TestMust(s *testing.T) {
 	t := core.T{T: s, Options: []cmp.Option{cmpopts.EquateErrors()}}
 

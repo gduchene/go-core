@@ -5,6 +5,7 @@ package core
 
 import (
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -36,10 +37,8 @@ func FilterHTTPMethod(methods ...string) HTTPFilterFunc {
 	sort.Strings(methods)
 	allowed := strings.Join(methods, ", ")
 	return func(w http.ResponseWriter, req *http.Request) bool {
-		for _, method := range methods {
-			if method == req.Method {
-				return false
-			}
+		if slices.Contains(methods, req.Method) {
+			return false
 		}
 		w.Header().Set("Allow", allowed)
 		w.WriteHeader(http.StatusMethodNotAllowed)

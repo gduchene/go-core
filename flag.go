@@ -7,8 +7,10 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"maps"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -163,7 +165,7 @@ func ParseProtobufEnum[T ~int32](values map[string]int32) ParseFunc[T] {
 	return func(s string) (T, error) {
 		val, found := values[strings.ToUpper(s)]
 		if !found {
-			return 0, UnknownEnumValueError[string]{s, MapKeys(values)}
+			return 0, UnknownEnumValueError[string]{s, slices.Collect(maps.Keys(values))}
 		}
 		return T(val), nil
 	}
@@ -180,10 +182,8 @@ func ParseString(s string) (string, error) { return s, nil }
 // Note that unlike ParseProtobufEnum, comparison is case-sensitive.
 func ParseStringEnum(values ...string) ParseFunc[string] {
 	return func(s string) (string, error) {
-		for _, val := range values {
-			if s == val {
-				return s, nil
-			}
+		if slices.Contains(values, s) {
+			return s, nil
 		}
 		return "", UnknownEnumValueError[string]{s, values}
 	}
@@ -251,10 +251,7 @@ func (f flagFeature) Set(s string) error {
 }
 
 func (f flagFeature) String() string {
-	if f.Enabled() {
-		return "true"
-	}
-	return "false"
+	return strconv.FormatBool(f.Enabled())
 }
 
 type flagValue[T any] struct {
